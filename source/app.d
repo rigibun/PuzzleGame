@@ -23,15 +23,6 @@ void main()
 
 	auto board = new Block[10][20];
 	
-	board[0][0] = new Block(Block.BlockColor.aqua);
-	board[1][1] = new Block(Block.BlockColor.yellow);
-	board[2][2] = new Block(Block.BlockColor.blue);
-	board[3][0] = new Block(Block.BlockColor.red);
-	board[4][0] = new Block(Block.BlockColor.purple);
-	board[5][0] = new Block(Block.BlockColor.green);
-	board[6][0] = new Block(Block.BlockColor.orange);
-	drawBoard(win, blockImage, board); 
-
 	//Event loop
 	while(1)
 	{
