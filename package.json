@@ -1,6 +1,6 @@
 {
-	"name": "tetris",
-	"description": "An example project skeleton",
+	"name": "puzzlegame",
+	"description": "dlang + SDL project",
 	"homepage": "http://blog.rigibun.net/",
 	"copyright": "Copyright © 2013, rigibun",
 	"authors": [
