@@ -1,0 +1,13 @@
+{
+	"name": "tetris",
+	"description": "An example project skeleton",
+	"homepage": "http://blog.rigibun.net/",
+	"copyright": "Copyright © 2013, rigibun",
+	"authors": [
+		"rigibun"
+	],
+	"libs-posix": ["dl"],
+	"dependencies": {
+		"derelict-sdl2": "~master"
+	}
+}

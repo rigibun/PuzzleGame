@@ -1,4 +1,4 @@
 PuzzleGame
 ==========
 
-this is just tetris
+Dlang + SDL
