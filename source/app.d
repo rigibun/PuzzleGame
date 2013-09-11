@@ -12,7 +12,7 @@ void main()
 
 	scope(exit) SDL_Quit();
 
-	SDL_Window* win = SDL_CreateWindow("tetris", SDL_WINDOWPOS_CENTERED,
+	SDL_Window* win = SDL_CreateWindow("PuzzleGame", SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	scope(exit) SDL_DestroyWindow(win);
 
