@@ -56,7 +56,6 @@ void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 
 	for(int i = 0; i < 20; i++)
 	{
-		writeln(i, "i");
 		for(int j = 0; j < 10; j++)
 		{
 			if(!(board[i][j] is null))
@@ -66,7 +65,6 @@ void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 				rectPos.y = 16 * i;
 				SDL_BlitSurface(blockImage, rectInfo, window_surface, rectPos);
 			}
-			j.writeln;
 		}
 	}
 
@@ -88,5 +86,4 @@ class Block
 		return myColor;
 	}
 }
-
 
