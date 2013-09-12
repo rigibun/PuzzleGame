@@ -126,6 +126,59 @@ void clearLine(Block[10][] board, ulong n)
 	board[n] = lineTemp;
 }
 
+int[2][4] getLeftRotatedPos(int[2][4] pos)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		int temp = pos[i][0];
+		pos[i][0] = pos[i][1];
+		pos[i][1] = -temp;
+	}
+	return pos;
+}
+
+int[2][4] getRightRotatedPos(int[2][4] pos)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		int temp = pos[i][0];
+		pos[i][0] = -pos[i][1];
+		pos[i][1] = temp;
+	}
+	return pos;
+}
+
+int[2][4] getDroppedPos(int[2][4] pos)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		pos[i][0]++;
+		pos[i][1]++;
+	}
+	return pos;
+}
+
+bool collCheck(int[2][4] pos, Block[10][] board)
+{
+	foreach(e; pos)
+	{
+		auto y = e[0];
+		auto x = e[1];
+
+		if(y < 0 || y >= board.length || x < 0 || x >= 10)
+		{
+			return true;
+		}
+		
+		if( !(board[y][x] is null) )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 class Block
 {
 	enum BlockColor {blue, red, yellow, green, orange, aqua, purple};
