@@ -203,19 +203,151 @@ class Mino
 	int[2][4] blocksPos;
 	int[2] myPos;
 
-	public this(Type t, int[2] pos)
+	public Type getType()
 	{
-		myType = t;
-		genPos();
+		return myType;
+	}
+
+	int[2][4] getPos()
+	{
+		return blocksPos;
 	}
 
 	abstract void genPos();
 	abstract void rotateLeft();
 	abstract void rotateRight();
-	abstract void drop();
-
-	int[2][4] getPos()
+	
+	void drop()
 	{
-		return blocksPos;
+		myPos[0]--;
+	}
+}
+
+class MinoNotSpin : Mino
+{
+	this(Type t, int[2] pos)
+	{
+		myType = t;
+		genPos();
+	}
+
+	override void genPos()
+	{
+		blocksPos[0] = [0, 0];
+		blocksPos[1] = [-1, 0];
+		blocksPos[2] = [0, 1];
+		blocksPos[3] = [-1, 1];
+	}
+
+	override void rotateLeft(){}
+	override void rotateRight(){}
+}
+
+class MinoFlipFlop : Mino
+{
+	bool verticalFlag = false;
+
+	this(Type t, int[2] pos)
+	{
+		myType = t;
+		genPos();
+	}
+
+	override void genPos()
+	{
+		switch(myType)
+		{
+			case Type.S:
+				blocksPos[0] = [0, 0];
+				blocksPos[1] = [0, -1];
+				blocksPos[2] = [1, 0];
+				blocksPos[3] = [-1, -1];
+				break;
+			case Type.Z:
+				blocksPos[0] = [0, 0];
+				blocksPos[1] = [0, 1];
+				blocksPos[2] = [-1, 0];
+				blocksPos[3] = [-1, -1];
+				break;
+			case Type.I:
+				blocksPos[0] = [0, 0];
+				blocksPos[1] = [0, 1];
+				blocksPos[2] = [0, -1];
+				blocksPos[3] = [0, -2];
+				break;
+			default:
+				writeln("MinoFlipFlop was construct with Type.", myType);
+				break;
+		}
+	}
+
+	override void rotateLeft()
+	{
+		if(!verticalFlag)
+			rotateRight();
+		else
+		{
+			blocksPos = getLeftRotatedPos(blocksPos);
+			verticalFlag = false;
+		}
+
+	}
+
+	override void rotateRight()
+	{
+		if(verticalFlag)
+			rotateLeft();
+		else
+		{
+			blocksPos = getRightRotatedPos(blocksPos);
+			verticalFlag = true;
+		}
+	}
+}
+
+class MinoNormal : Mino
+{
+	this(Type t, int[2] pos)
+	{
+		myType = t;
+		genPos();
+	}
+
+	override void genPos()
+	{
+		switch(myType)
+		{
+			case Type.J:
+				blocksPos[0] = [0, 0];
+				blocksPos[1] = [0, -1];
+				blocksPos[2] = [0, 1];
+				blocksPos[3] = [-1, -1];
+				break;
+			case Type.L:
+				blocksPos[0] = [0, 0];
+				blocksPos[1] = [0, 1];
+				blocksPos[2] = [0, -1];
+				blocksPos[3] = [-1, 1];
+				break;
+			case Type.T:
+				blocksPos[0] = [0, 0];
+				blocksPos[1] = [0, 1];
+				blocksPos[2] = [0, -1];
+				blocksPos[3] = [-1, 0];
+				break;
+			default:
+				writeln("MinoNormal was construct with Type.", myType);
+				break;
+		}
+	}
+
+	override void rotateLeft()
+	{
+		blocksPos = getLeftRotatedPos(blocksPos);
+	}
+
+	override void rotateRight()
+	{
+		blocksPos = getRightRotatedPos(blocksPos);
 	}
 }
