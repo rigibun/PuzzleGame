@@ -82,15 +82,16 @@ void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 	SDL_UpdateWindowSurface(win);
 }
 
-bool checkBoard(Block[10][20] board)
+bool checkBoard(Block[10][] board)
 {
 	bool vanishFlag;
-	for(int i = 19; i >= 0; i--)
+	for(auto i = cast(int)board.length - 1; i >= 0; i--)
 	{
 		bool lineFullFlag = true;
 		
 		for(int j = 0; j < 10; j++)
 		{
+			writeln(i, ' ', j);
 			if(board[i][j] is null)
 				lineFullFlag = false;
 		}
@@ -105,7 +106,7 @@ bool checkBoard(Block[10][20] board)
 	return vanishFlag;
 }
 
-void clearLine(Block[10][20] board, int n)
+void clearLine(Block[10][] board, ulong n)
 {
 	auto lineTemp = board[n];
 	while(n > 0)
@@ -141,3 +142,27 @@ class Block
 	}
 }
 
+class Mino
+{
+	enum Type { J, Z, O, S, L, I, T };
+
+	Type myType;
+	int[2][4] blocksPos;
+	int[2] myPos;
+
+	public this(Type t, int[2] pos)
+	{
+		myType = t;
+		genPos();
+	}
+
+	abstract void genPos();
+	abstract void rotateLeft();
+	abstract void rotateRight();
+	abstract void drop();
+
+	int[2][4] getPos()
+	{
+		return blocksPos;
+	}
+}
