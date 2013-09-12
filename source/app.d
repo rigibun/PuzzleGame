@@ -33,14 +33,13 @@ void main()
 			if(e.type == SDL_QUIT) break;
 		}
 	}
-
 }
 
 void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 {
-	auto window_rect = new SDL_Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto window_surface = SDL_GetWindowSurface(win);
-	SDL_FillRect(window_surface, window_rect, SDL_MapRGB(window_surface.format, 0, 0, 0));
+	auto windowRect = new SDL_Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto windowSurface = SDL_GetWindowSurface(win);
+	SDL_FillRect(windowSurface, windowRect, SDL_MapRGB(windowSurface.format, 0, 0, 0));
 
 	auto rectInfo = new SDL_Rect(0, 0, 16, 16);
 	auto rectPos = new SDL_Rect(0, 0);
@@ -54,12 +53,50 @@ void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 				rectInfo.x = 16 * board[i][j].getColor();
 				rectPos.x = 16 * j;
 				rectPos.y = 16 * i;
-				SDL_BlitSurface(blockImage, rectInfo, window_surface, rectPos);
+				SDL_BlitSurface(blockImage, rectInfo, windowSurface, rectPos);
 			}
 		}
 	}
 
 	SDL_UpdateWindowSurface(win);
+}
+
+bool checkBoard(Block[10][] board)
+{
+	bool vanishFlag;
+	for(int i = 19; i >= 0; i--)
+	{
+		bool lineFullFlag = true;
+		
+		for(int j = 0; j < 10; j++)
+		{
+			if(board[i][j] is null)
+				lineFullFlag = false;
+		}
+		
+		if(lineFullFlag)
+		{
+			vanishFlag = true;
+			clearLine(board, i);
+			i++;
+		}
+	}
+	return vanishFlag;
+}
+
+void clearLine(Block[10][] board, int n)
+{
+	while(n > 0)
+	{
+		board[n] = board[n - 1];
+		bool empty = true;
+		for(int i = 0; i < board[n].length; i++)
+			if(!(board[n][i] is null))
+				empty = false;
+		if(empty)
+			break;
+		n--;
+	}
 }
 
 class Block
