@@ -82,6 +82,30 @@ void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 	SDL_UpdateWindowSurface(win);
 }
 
+void drawMino(SDL_Window* win, SDL_Surface* blockImage, Mino mino)
+{
+	auto windowSurface = SDL_GetWindowSurface(win);
+	auto rectInfo = new SDL_Rect(0, 0, 16, 16);
+	auto rectPos = new SDL_Rect(0, 0);
+
+	auto pos = mino.getPos();
+	auto blockPos = mino.getBlockPos();
+	auto color = cast(Block.BlockColor)(mino.getType());
+	rectInfo.x = 16 * color;
+
+	for(int i = 0; i < 4; i++)
+	{
+		auto y = blockPos[i][0] + pos[0];
+		auto x = blockPos[i][1] + pos[1];
+
+		rectPos.x = 16 * x;
+		rectPos.y = 16 * y;
+		SDL_BlitSurface(blockImage, rectInfo, windowSurface, rectPos);
+	}
+
+	SDL_UpdateWindowSurface(win);
+}
+
 bool checkBoard(Block[10][] board)
 {
 	bool vanishFlag;
@@ -208,9 +232,14 @@ class Mino
 		return myType;
 	}
 
-	int[2][4] getPos()
+	int[2][4] getBlockPos()
 	{
 		return blocksPos;
+	}
+
+	int[2] getPos()
+	{
+		return myPos;
 	}
 
 	abstract void genPos();
@@ -228,6 +257,7 @@ class MinoNotSpin : Mino
 	this(Type t, int[2] pos)
 	{
 		myType = t;
+		myPos = pos;
 		genPos();
 	}
 
@@ -250,6 +280,7 @@ class MinoFlipFlop : Mino
 	this(Type t, int[2] pos)
 	{
 		myType = t;
+		myPos = pos;
 		genPos();
 	}
 
@@ -310,6 +341,7 @@ class MinoNormal : Mino
 	this(Type t, int[2] pos)
 	{
 		myType = t;
+		myPos = pos;
 		genPos();
 	}
 
