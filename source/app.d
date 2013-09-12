@@ -61,7 +61,7 @@ void drawBoard(SDL_Window* win, SDL_Surface* blockImage, Block[10][] board)
 	SDL_UpdateWindowSurface(win);
 }
 
-bool checkBoard(Block[10][] board)
+bool checkBoard(Block[10][20] board)
 {
 	bool vanishFlag;
 	for(int i = 19; i >= 0; i--)
@@ -84,8 +84,9 @@ bool checkBoard(Block[10][] board)
 	return vanishFlag;
 }
 
-void clearLine(Block[10][] board, int n)
+void clearLine(Block[10][20] board, int n)
 {
+	auto lineTemp = board[n];
 	while(n > 0)
 	{
 		board[n] = board[n - 1];
@@ -97,6 +98,10 @@ void clearLine(Block[10][] board, int n)
 			break;
 		n--;
 	}
+	
+	foreach(ref e; lineTemp)
+		e = null;
+	board[n] = lineTemp;
 }
 
 class Block
