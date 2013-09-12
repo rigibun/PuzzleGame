@@ -1,5 +1,5 @@
 import derelict.sdl2.sdl, derelict.sdl2.image;
-import std.stdio, std.datetime, core.thread;
+import std.stdio, std.datetime, std.random, core.thread;
 
 static const int WINDOW_WIDTH = 160;
 static const int WINDOW_HEIGHT = 320;
@@ -201,6 +201,30 @@ bool collCheck(int[2][4] pos, Block[10][] board)
 	}
 
 	return false;
+}
+
+Mino genNewMino()
+{
+	auto rnd = Random(unpredictableSeed);
+	auto num = cast(Mino.Type)(uniform(1, 7, rnd));
+	Mino mino;
+
+	switch(num)
+	{
+		case Mino.Type.O:
+			mino = new MinoNotSpin(num, [1, 4]);
+			break;
+		case Mino.Type.J, Mino.Type.L, Mino.Type.T:
+			mino = new MinoNormal(num, [1, 4]);
+			break;
+		case Mino.Type.S, Mino.Type.Z, Mino.Type.I:
+			mino = new MinoFlipFlop(num, [1, 4]);
+			break;
+		default:
+			goto case Mino.Type.O;
+	}
+
+	return mino;
 }
 
 class Block
