@@ -85,7 +85,11 @@ void main()
 					currentMino = genNewMino();
 					if( collCheck(currentMino.getBlocksPos(), board) )
 					{
-						auto message = "You cleared " ~ lineCount.to!string ~ " line.";
+						auto message = "You cleared " ~ lineCount.to!string;
+						if(lineCount > 1)
+							message ~= " lines.";
+						else
+							message ~= " line.";
 						SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, cast(char*)"Game Over",
 								cast(char*)message, null);
 						break;
