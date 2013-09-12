@@ -1,5 +1,5 @@
 import derelict.sdl2.sdl, derelict.sdl2.image;
-import std.stdio;
+import std.stdio, std.datetime, core.thread;
 
 static const int WINDOW_WIDTH = 160;
 static const int WINDOW_HEIGHT = 320;
@@ -22,16 +22,37 @@ void main()
 	auto blockImage = IMG_Load("views/block.bmp");
 
 	auto board = new Block[10][20];
+	StopWatch timer;
+	uint frameCount = 0;
+	uint dropInterval = 30;
 	
+	timer.start();
 	//Event loop
 	while(1)
 	{
-		//drawBoard(win, blockImage, board); 
 		SDL_Event e;
 		if(SDL_PollEvent(&e))
 		{
 			if(e.type == SDL_QUIT) break;
 		}
+
+		if(timer.peek().to!("msecs", long) > 33)
+		{
+			frameCount++;
+			if(frameCount >= dropInterval)
+			{
+				// Drop Block
+
+				frameCount = 0;
+			}
+
+			drawBoard(win, blockImage, board);
+
+			timer.reset();
+			timer.start();
+		}
+
+		Thread.sleep( dur!("msecs")(1) );
 	}
 }
 
