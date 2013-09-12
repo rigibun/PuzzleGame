@@ -1,5 +1,5 @@
 import derelict.sdl2.sdl, derelict.sdl2.image;
-import std.stdio, std.datetime, std.random, core.thread;
+import std.stdio, std.datetime, std.random, std.conv, core.thread;
 
 static const int WINDOW_WIDTH = 160;
 static const int WINDOW_HEIGHT = 320;
@@ -25,6 +25,8 @@ void main()
 	StopWatch timer;
 	uint frameCount = 0;
 	uint dropInterval = 30;
+	ulong lineCount = 0;
+	Mino currentMino = genNewMino();
 	
 	timer.start();
 	//Event loop
@@ -34,6 +36,40 @@ void main()
 		if(SDL_PollEvent(&e))
 		{
 			if(e.type == SDL_QUIT) break;
+			if(e.type == SDL_KEYDOWN)
+				switch(e.key.keysym.sym)
+				{
+					case SDLK_DOWN:
+						if( !collCheck( getDroppedPos(currentMino.getBlocksPos), board))
+							currentMino.drop();
+						break;
+					case SDLK_UP:
+						while( !collCheck( getDroppedPos(currentMino.getBlocksPos), board))
+							currentMino.drop();
+						break;
+					case SDLK_LEFT:
+						if( !collCheck( getMoveLeftPos(currentMino.getBlocksPos), board) )
+							currentMino.moveLeft();
+						break;
+					case SDLK_RIGHT:
+						if( !collCheck( getMoveRightPos(currentMino.getBlocksPos), board) )
+							currentMino.moveRight();
+						break;
+					case SDLK_z:
+						if( !collCheck( getRightRotatedPos(currentMino.getRawBlocksPos,
+										currentMino.getPos() ),
+									board) )
+							currentMino.rotateRight();
+						break;
+					case SDLK_x:
+						if( !collCheck( getLeftRotatedPos(currentMino.getRawBlocksPos,
+										currentMino.getPos() ),
+									board) )
+							currentMino.rotateLeft();
+						break;
+					default:
+						break;
+				}
 		}
 
 		if(timer.peek().to!("msecs", long) > 33)
@@ -42,11 +78,31 @@ void main()
 			if(frameCount >= dropInterval)
 			{
 				// Drop Block
+				if( collCheck( getDroppedPos(currentMino.getBlocksPos()), board) )
+				{
+					putMino(currentMino, board);
+					lineCount += checkBoard(board);
+					currentMino = genNewMino();
+					if( collCheck(currentMino.getBlocksPos(), board) )
+					{
+						auto message = "You cleared " ~ lineCount.to!string ~ " line.";
+						SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, cast(char*)"Game Over",
+								cast(char*)message, null);
+						break;
+					}
+				}
+				else
+				{
+					currentMino.drop();
+				}
 
 				frameCount = 0;
 			}
 
+
 			drawBoard(win, blockImage, board);
+			if( !(currentMino is null) )
+				drawMino(win, blockImage, currentMino);
 
 			timer.reset();
 			timer.start();
@@ -88,15 +144,14 @@ void drawMino(SDL_Window* win, SDL_Surface* blockImage, Mino mino)
 	auto rectInfo = new SDL_Rect(0, 0, 16, 16);
 	auto rectPos = new SDL_Rect(0, 0);
 
-	auto pos = mino.getPos();
-	auto blockPos = mino.getBlockPos();
+	auto blocksPos = mino.getBlocksPos();
 	auto color = cast(Block.BlockColor)(mino.getType());
 	rectInfo.x = 16 * color;
 
 	for(int i = 0; i < 4; i++)
 	{
-		auto y = blockPos[i][0] + pos[0];
-		auto x = blockPos[i][1] + pos[1];
+		auto y = blocksPos[i][0];
+		auto x = blocksPos[i][1];
 
 		rectPos.x = 16 * x;
 		rectPos.y = 16 * y;
@@ -106,31 +161,31 @@ void drawMino(SDL_Window* win, SDL_Surface* blockImage, Mino mino)
 	SDL_UpdateWindowSurface(win);
 }
 
-bool checkBoard(Block[10][] board)
+ulong checkBoard(Block[10][] board)
 {
-	bool vanishFlag;
+	ulong erasedLine = 0;
 	for(auto i = cast(int)board.length - 1; i >= 0; i--)
 	{
 		bool lineFullFlag = true;
 		
 		for(int j = 0; j < 10; j++)
 		{
-			writeln(i, ' ', j);
+			//writeln(i, ' ', j);
 			if(board[i][j] is null)
 				lineFullFlag = false;
 		}
 		
 		if(lineFullFlag)
 		{
-			vanishFlag = true;
-			clearLine(board, i);
+			erasedLine++;
+			eraseLine(board, i);
 			i++;
 		}
 	}
-	return vanishFlag;
+	return erasedLine;
 }
 
-void clearLine(Block[10][] board, ulong n)
+void eraseLine(Block[10][] board, ulong n)
 {
 	auto lineTemp = board[n];
 	while(n > 0)
@@ -150,26 +205,56 @@ void clearLine(Block[10][] board, ulong n)
 	board[n] = lineTemp;
 }
 
-int[2][4] getLeftRotatedPos(int[2][4] pos)
+void putMino(Mino mino, Block[10][] board)
+{
+	auto color = cast(Block.BlockColor)(mino.getType);
+	auto blocksPos = mino.getBlocksPos;
+	foreach(pos; blocksPos)
+	{
+		board[pos[0]][pos[1]] = new Block(color);
+	}
+}
+
+int[2][4] getMoveLeftPos(int[2][4] pos)
 {
 	for(int i = 0; i < 4; i++)
 	{
-		int temp = pos[i][0];
-		pos[i][0] = pos[i][1];
-		pos[i][1] = -temp;
+		pos[i][1]--;
 	}
 	return pos;
 }
 
-int[2][4] getRightRotatedPos(int[2][4] pos)
+int[2][4] getMoveRightPos(int[2][4] pos)
 {
 	for(int i = 0; i < 4; i++)
 	{
-		int temp = pos[i][0];
-		pos[i][0] = -pos[i][1];
-		pos[i][1] = temp;
+		pos[i][1]++;
 	}
 	return pos;
+}
+
+int[2][4] getLeftRotatedPos(int[2][4] blocksPos, int[2] pos)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		int temp = blocksPos[i][0];
+		blocksPos[i][0] = blocksPos[i][1] + pos[0];
+		blocksPos[i][1] = -temp + pos[1];
+
+	}
+
+	return blocksPos;
+}
+
+int[2][4] getRightRotatedPos(int[2][4] blocksPos, int[2] pos)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		int temp = blocksPos[i][0];
+		blocksPos[i][0] = -blocksPos[i][1] + pos[0];
+		blocksPos[i][1] = temp + pos[1];
+	}
+	return blocksPos;
 }
 
 int[2][4] getDroppedPos(int[2][4] pos)
@@ -177,14 +262,13 @@ int[2][4] getDroppedPos(int[2][4] pos)
 	for(int i = 0; i < 4; i++)
 	{
 		pos[i][0]++;
-		pos[i][1]++;
 	}
 	return pos;
 }
 
-bool collCheck(int[2][4] pos, Block[10][] board)
+bool collCheck(int[2][4] blockPos, Block[10][] board)
 {
-	foreach(e; pos)
+	foreach(e; blockPos)
 	{
 		auto y = e[0];
 		auto x = e[1];
@@ -206,7 +290,7 @@ bool collCheck(int[2][4] pos, Block[10][] board)
 Mino genNewMino()
 {
 	auto rnd = Random(unpredictableSeed);
-	auto num = cast(Mino.Type)(uniform(1, 7, rnd));
+	auto num = cast(Mino.Type)(uniform(0, 7, rnd));
 	Mino mino;
 
 	switch(num)
@@ -217,8 +301,14 @@ Mino genNewMino()
 		case Mino.Type.J, Mino.Type.L, Mino.Type.T:
 			mino = new MinoNormal(num, [1, 4]);
 			break;
-		case Mino.Type.S, Mino.Type.Z, Mino.Type.I:
+		case Mino.Type.Z:
 			mino = new MinoFlipFlop(num, [1, 4]);
+			break;
+		case Mino.Type.S:
+			mino = new MinoFlipFlop(num, [1, 5]);
+			break;
+		case Mino.Type.I:
+			mino = new MinoFlipFlop(num, [0, 5]);
 			break;
 		default:
 			goto case Mino.Type.O;
@@ -256,7 +346,18 @@ class Mino
 		return myType;
 	}
 
-	int[2][4] getBlockPos()
+	int[2][4] getBlocksPos()
+	{
+		auto retPos = blocksPos;
+		foreach(ref pos; retPos)
+		{
+			pos[0] += myPos[0];
+			pos[1] += myPos[1];
+		}
+		return retPos;
+	}
+
+	int[2][4] getRawBlocksPos()
 	{
 		return blocksPos;
 	}
@@ -269,10 +370,20 @@ class Mino
 	abstract void genPos();
 	abstract void rotateLeft();
 	abstract void rotateRight();
+
+	void moveLeft()
+	{
+		myPos[1]--;
+	}
+
+	void moveRight()
+	{
+		myPos[1]++;
+	}
 	
 	void drop()
 	{
-		myPos[0]--;
+		myPos[0]++;
 	}
 }
 
@@ -342,7 +453,12 @@ class MinoFlipFlop : Mino
 			rotateRight();
 		else
 		{
-			blocksPos = getLeftRotatedPos(blocksPos);
+			for(int i = 0; i < 4; i++)
+			{
+				int temp = blocksPos[i][0];
+				blocksPos[i][0] = blocksPos[i][1];
+				blocksPos[i][1] = -temp;
+			}
 			verticalFlag = false;
 		}
 
@@ -354,7 +470,12 @@ class MinoFlipFlop : Mino
 			rotateLeft();
 		else
 		{
-			blocksPos = getRightRotatedPos(blocksPos);
+			for(int i = 0; i < 4; i++)
+			{
+				int temp = blocksPos[i][0];
+				blocksPos[i][0] = -blocksPos[i][1];
+				blocksPos[i][1] = temp;
+			}
 			verticalFlag = true;
 		}
 	}
@@ -399,11 +520,21 @@ class MinoNormal : Mino
 
 	override void rotateLeft()
 	{
-		blocksPos = getLeftRotatedPos(blocksPos);
+		for(int i = 0; i < 4; i++)
+		{
+			int temp = blocksPos[i][0];
+			blocksPos[i][0] = blocksPos[i][1];
+			blocksPos[i][1] = -temp;
+		}
 	}
 
 	override void rotateRight()
 	{
-		blocksPos = getRightRotatedPos(blocksPos);
+		for(int i = 0; i < 4; i++)
+		{
+			int temp = blocksPos[i][0];
+			blocksPos[i][0] = -blocksPos[i][1];
+			blocksPos[i][1] = temp;
+		}
 	}
 }
